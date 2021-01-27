@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>刮刮乐</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+    canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      border: 1px dashed black;
+    }
+  </style>
+</head>
+<body>
+<script>
+  (function () {
+    const imgBg = new Image()
+    const imgFg = new Image()
+    let canvasWidth = 0
+    let canvasHeight = 0
+    let canvasLeft = 0
+    let canvasTop = 0
+
+    const init = function () {
+      const $canvasBg = document.createElement('canvas')
+      $canvasBg.id = 'bg'
+      const $canvasFg = document.createElement('canvas')
+      $canvasFg.id = 'fg'
+      $canvasFg.width = $canvasBg.width = canvasWidth
+      $canvasFg.height = $canvasBg.height = canvasHeight
+      $canvasFg.style.cssText = $canvasBg.style.cssText = `left:${canvasLeft}px;top:${canvasTop}px;`
+      document.body.append($canvasBg)
+      document.body.append($canvasFg)
+
+      const ctxBg = $canvasBg.getContext('2d')
+      const ctxFg = $canvasFg.getContext('2d')
+
+      // 绘制背景
+      ctxBg.drawImage(imgBg, 0, 0)
+
+      ctxFg.lineWidth = 50
+      ctxFg.lineCap = 'round'
+      ctxFg.lineJoin = 'round'
+      ctxFg.strokeStyle = '#000'
+      ctxFg.drawImage(imgFg, 0, 0)
+      ctxFg.globalCompositeOperation = 'destination-out'
+
+      let posX = 0
+      let posY = 0
+      let drawing = false
+
+      /**
+       * 涂抹
+       * @param start 重置画笔
+       */
+      const draw = function (start) {
+        if (start) {
+          ctxFg.beginPath()
+          ctxFg.moveTo(posX, posY)
+        }
+        ctxFg.lineTo(posX, posY)
+        ctxFg.stroke()
+      }
+
+      // 按下
+      const onMouseDown = function (e) {
+        drawing = true
+        // 获得画笔相对canvas位置
+        if (e.touches && e.touches.length) {
+          posX = e.touches[0].pageX - canvasLeft
+          posY = e.touches[0].pageY - canvasTop
+        }
+        else {
+          posX = e.pageX - canvasLeft
+          posY = e.pageY - canvasTop
+        }
+        draw(true)
+      }
+
+      // 移动
+      const onMouseMove = function (e) {
+        if (drawing) {
+          if (e.touches && e.touches.length) {
+            posX = e.touches[0].pageX - canvasLeft
+            posY = e.touches[0].pageY - canvasTop
+          }
+          else {
+            posX = e.pageX - canvasLeft
+            posY = e.pageY - canvasTop
+          }
+          draw()
+        }
+      }
+
+      // 抬起
+      const onMouseUp = function (e) {
+        if (drawing) {
+          drawing = false
+        }
+      }
+
+      // 事件监听
+      $canvasFg.addEventListener('mousedown', onMouseDown, false)
+      $canvasFg.addEventListener('touchstart', onMouseDown, false)
+
+      window.addEventListener('mousemove', onMouseMove, false)
+      window.addEventListener('touchmove', onMouseMove, false)
+
+      window.addEventListener('mouseup', onMouseUp, false)
+      window.addEventListener('touchend', onMouseUp, false)
+    }
+
+    // 载入图片
+    let loadCount = 0
+    const onLoad = function () {
+      loadCount++
+      if (loadCount === 2) {
+        canvasWidth = imgBg.width
+        canvasHeight = imgBg.height
+        canvasLeft = (window.innerWidth - canvasWidth) * 0.5
+        canvasTop = (window.innerHeight - canvasHeight) * 0.5
+        init()
+      }
+    }
+    imgBg.src = 'after.png'
+    imgBg.complete ? onLoad() : (imgBg.onload = onLoad)
+    imgFg.src = 'before.png'
+    imgFg.complete ? onLoad() : (imgFg.onload = onLoad)
+  })()
+</script>
+</body>
+</html>
