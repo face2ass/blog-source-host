@@ -217,7 +217,8 @@
     loader.add([honeHoneClockJson])
     loader.onComplete.add(async (res) => {
       clockWrap = new PIXI.Container()
-      clockWrap.position.set((pageWidth - 630) * 0.5, (pageHeight + 150) * 0.5)
+      clockWrap.pivot.set(600 * 0.5, -70)
+      clockWrap.position.set(pageWidth * 0.5, pageHeight * 0.5)
 
       clockHour1 = new Clock('hour')
       clockHour2 = new Clock('hour')
@@ -225,18 +226,90 @@
       clockMin2 = new Clock('min')
       clockSec1 = new Clock('sec')
       clockSec2 = new Clock('sec')
-      clockHour1.position.set(0, 0)
-      clockHour2.position.set(100, 0)
-      clockMin1.position.set(250, 0)
-      clockMin2.position.set(350, 0)
-      clockSec1.position.set(500, 0)
-      clockSec2.position.set(600, 0)
+      clockHour1.position.set(50, 0)
+      clockHour2.position.set(150, 0)
+      clockMin1.position.set(300, 0)
+      clockMin2.position.set(400, 0)
+      clockSec1.position.set(550, 0)
+      clockSec2.position.set(650, 0)
       clockWrap.addChild(clockHour1)
       clockWrap.addChild(clockHour2)
       clockWrap.addChild(clockMin1)
       clockWrap.addChild(clockMin2)
       clockWrap.addChild(clockSec1)
       clockWrap.addChild(clockSec2)
+
+      const indicator = new PIXI.Sprite(PIXI.Texture.WHITE)
+      indicator.name = 'indicator'
+      indicator.alpha = 0.5
+      indicator.width = 700
+      indicator.height = 180
+      // indicator.anchor.set(0.5, 0.5)
+      indicator.position.set(0, -170)
+      indicator.visible = false
+      clockWrap.addChild(indicator)
+
+      let pickTime = 0 // 打点时间
+      let pickX = 0 // 打点位置
+      let objStartX = 0
+      let objStartY = 0
+      let startPageX = 0
+      let startPageY = 0
+      let deltaX = 0
+      let deltaY = 0
+      let isTap = false
+      let dragging = false
+      const onDragStart = function (pageX, pageY) {
+        pickTime = performance.now()
+        dragging = true
+        isTap = true
+        pickX = pageX
+        startPageX = pageX
+        startPageY = pageY
+        objStartX = clockWrap.x
+        objStartY = clockWrap.y
+      }
+
+      const onDragMove = function (pageX, pageY, e) {
+        if (dragging) {
+          deltaX = pageX - startPageX
+          deltaY = pageY - startPageY
+          if (isTap && (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2)) {
+            isTap = false
+          }
+          if (!isTap) {
+            clockWrap.position.set(objStartX + deltaX, objStartY + deltaY)
+          }
+        }
+      }
+
+      const onDragEnd = function (pageX, pageY, e) {
+        if (dragging) {
+          dragging = false
+          isTap = false
+        }
+      }
+
+      indicator.interactive = true
+      indicator.buttonMode = true
+      indicator.on('pointerdown', e => onDragStart(e.data.global.x, e.data.global.y, e))
+      $canvas.ontouchmove = e => onDragMove(e.touches[0].pageX, e.touches[0].pageY)
+      $canvas.ontouchend = e => onDragEnd(e.changedTouches[0].pageX, e.changedTouches[0].pageY, e)
+      $canvas.onmousemove = e => onDragMove(e.pageX, e.pageY, e)
+      $canvas.onmouseup = e => onDragEnd(e.pageX, e.pageY, e)
+
+      clockWrap.interactive = true
+      let lastClickAt = 0
+      clockWrap.on('pointertap', function () {
+        if (performance.now() - lastClickAt < 300) {
+          indicator.visible = !indicator.visible
+          lastClickAt = 0
+        }
+        else {
+          lastClickAt = performance.now()
+        }
+      })
+
       stage.addChild(clockWrap)
 
       // 开始动画循环
@@ -248,7 +321,7 @@
       pageWidth = document.body.clientWidth
       pageHeight = document.body.clientHeight
       if (clockWrap) {
-        clockWrap.position.set((pageWidth - 630) * 0.5, (pageHeight + 150) * 0.5)
+        clockWrap.position.set(pageWidth * 0.5, pageHeight * 0.5)
       }
       renderer.resize(pageWidth, pageHeight)
     }
