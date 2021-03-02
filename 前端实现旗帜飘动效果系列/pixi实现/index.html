@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <title>wave flag by pixi</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+    body {
+      position: relative;
+      background: lightgrey;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+<canvas>你的浏览器不支持html5</canvas>
+<script src="./dat.gui.min.js"></script>
+<script src="./pixi_5.3.7.min.js"></script>
+<script src="./stats.min.js"></script>
+<script>
+  window.PIXI = PIXI;
+
+  (async function () {
+    const stats = new Stats()
+    document.body.appendChild(stats.dom)
+
+    const $canvas = document.querySelector('canvas')
+
+    let pageWidth = window.innerWidth
+    let pageHeight = window.innerHeight
+    let spriteWidth = 0
+    let spriteHeight = 0
+    let running = false
+
+    const opts = {
+      velocity: 0.00035, // 波速
+      period: 3.0, // 周期数
+      amplitude: 0.04, // 最大振幅
+      brightness: 8.0, // 高光亮度
+    }
+    const gui = new dat.gui.GUI()
+    const folder = gui.addFolder('波形控制')
+    folder
+      .add(opts, 'velocity', 0, 0.001, 0.00001)
+      .onChange(function (val) {
+        running && (filter.uniforms.velocity = val)
+      })
+    folder
+      .add(opts, 'period', 1, 8, 0.1)
+      .onChange(function (val) {
+        running && (filter.uniforms.period = val)
+      })
+    folder
+      .add(opts, 'amplitude', 0, 0.2, 0.001)
+      .onChange(function (val) {
+        running && (filter.uniforms.amplitude = val)
+      })
+    folder
+      .add(opts, 'brightness', 0, 20, 0.1)
+      .onChange(function (val) {
+        running && (filter.uniforms.brightness = val)
+      })
+    folder.open()
+
+    const renderer = new PIXI.Renderer({
+      view: $canvas,
+      width: pageWidth,
+      height: pageHeight,
+      resolution: window.devicePixelRatio,
+      transparent: true,
+      // autoDensity: true,
+      // antialias: true
+    })
+    const loader = new PIXI.Loader()
+
+    const imgFlag = './flag.jpg'
+    const shaderFrag = './shader_fragment.frag'
+    loader.add([imgFlag, shaderFrag])
+
+    onResize()
+
+    let filter
+    let spriteFlag
+    loader.onComplete.add(async (loader, resources) => {
+      spriteFlag = new PIXI.Sprite(resources[imgFlag].texture)
+      spriteWidth = spriteFlag.width
+      spriteHeight = spriteFlag.height
+      spriteFlag.position.set((pageWidth - spriteWidth) * 0.5, (pageHeight - spriteHeight) * 0.5)
+      // 使用默认顶点着色器
+      filter = new PIXI.Filter(null, resources[shaderFrag].data, {
+        time: performance.now(),
+        velocity: opts.velocity,
+        period: opts.period,
+        amplitude: opts.amplitude,
+        brightness: opts.brightness
+      })
+      // 设置过滤区域（最大振幅是高度的0.2）
+      spriteFlag.filterArea = new PIXI.Rectangle(spriteFlag.x, spriteFlag.y - 0.4 * spriteHeight, spriteWidth, spriteHeight * 1.8)
+      spriteFlag.filters = [filter]
+      stage.addChild(spriteFlag)
+      ticker.start() // 开始动画循环
+      running = true
+    })
+
+    loader.load()
+
+    const stage = new PIXI.Container()
+    stage.name = 'stage'
+    const ticker = new PIXI.Ticker()
+    const loop = function (delta) {
+      stats.begin()
+      running && (filter.uniforms.time = performance.now())
+      renderer.render(stage)
+      stats.end()
+    }
+
+    ticker.add(loop)
+
+    function onResize (e) {
+      pageWidth = window.innerWidth
+      pageHeight = window.innerHeight
+      if (running) {
+        spriteFlag.position.set((pageWidth - spriteWidth) * 0.5, (pageHeight - spriteHeight) * 0.5)
+        spriteFlag.filterArea = new PIXI.Rectangle(spriteFlag.x, spriteFlag.y - 0.4 * spriteHeight, spriteWidth, spriteHeight * 1.8)
+      }
+      renderer.resize(pageWidth, pageHeight)
+    }
+
+    window.onresize = onResize
+  })()
+</script>
+</body>
+</html>
