@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Light Sweep Effect</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+    canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+<canvas class="canvas"></canvas>
+<script src="./pixi_6.0.4.min.js"></script>
+<script src="./stats.min.js"></script>
+<script>
+
+(async function () {
+const stats = new Stats()
+document.body.appendChild(stats.domElement)
+
+let pageWidth = 0
+let pageHeight = 0
+
+const $canvas = document.querySelector('canvas')
+const renderer = new PIXI.Renderer({
+  view: $canvas,
+  width: pageWidth,
+  height: pageHeight,
+  transparent: true,
+  autoDensity: true,
+  antialias: true
+})
+
+let uniforms = null
+const stage = new PIXI.Container()
+stage.name = 'stage'
+const sprite = new PIXI.Sprite()
+sprite.name = 'sprite'
+sprite.anchor.set(0.5, 0.5)
+sprite.position.set(0, 0)
+stage.addChild(sprite)
+
+let pauseAt = 0
+const ticker = new PIXI.Ticker()
+const loop = function () {
+  stats.begin() // 性能监控
+  // 移动光线
+  if (uniforms) {
+    if (uniforms.offsetX >= 2.3) {
+      uniforms.offsetX = 0
+      pauseAt = performance.now()
+    }
+    else if (!pauseAt || performance.now() - pauseAt > 1000) {
+      uniforms.offsetX += 0.01
+      pauseAt = 0
+    }
+  }
+  renderer.render(stage)
+  stats.end()
+}
+
+ticker.add(loop)
+
+const img = 'pyro.png'
+const loader = new PIXI.Loader()
+loader.add([img])
+loader.onComplete.add(async () => {
+  // 获取材质
+  sprite.texture = loader.resources[img].texture
+  // 获取片元着色器代码
+  const res = await fetch('./fragmentShader.frag')
+  const fragStr = await res.text()
+  // 添加 uniforms 变量
+  uniforms = { offsetX: 0.0, size: [sprite.width, sprite.height] }
+  // 使用默认顶点着色器来创建过滤器
+  const filter = new PIXI.Filter(null, fragStr, uniforms)
+  sprite.filters = [filter]
+  // 开始动画循环
+  ticker.start()
+})
+loader.load()
+
+const onResize = (e) => {
+  pageWidth = document.body.clientWidth
+  pageHeight = document.body.clientHeight
+  sprite.position.set(pageWidth * 0.5, pageHeight * 0.5)
+  renderer.resize(pageWidth, pageHeight)
+}
+
+onResize()
+
+window.onresize = onResize
+})()
+</script>
+</body>
+</html>
