@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8"/>
+  <title>缩放</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      outline: 0;
+      overflow: hidden;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #ele {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: 0 0;
+      transform: translate(0, 0) scale(1);
+      user-select: none;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+<img src="img.jpg" id="ele">
+<script>
+  (function () {
+    let $ele = document.getElementById('ele')
+    const $body = document.body
+
+    const onImgLoad = () => {
+      let scale = 1
+      let translateX = 0
+      let translateY = 0
+
+      let targetScale = 1
+      let targetTranslateX = 0
+      let targetTranslateY = 0
+
+      let start = {x: 0, y: 0}
+      const mouse = {x: 0, y: 0}
+      let moving = false
+      let mouseDown = false
+      let scaling = false
+
+      $ele.style.width = $ele.width + 'px'
+      $ele.style.height = $ele.height + 'px'
+
+      targetTranslateX = translateX = ($body.clientWidth - $ele.width) * 0.5
+      targetTranslateY = translateY = ($body.clientHeight - $ele.height) * 0.5
+
+      $body.onmousedown = e => {
+        start = {x: e.pageX - translateX, y: e.pageY - translateY}
+        mouseDown = true
+        moving = true
+        scaling = false
+      }
+      $body.onmousemove = e => {
+        if (mouseDown) {
+          targetTranslateX = e.pageX - start.x
+          targetTranslateY = e.pageY - start.y
+        }
+      }
+      $body.onmouseup = e => {
+        mouseDown = false
+      }
+      $body.onwheel = function (e) {
+        scaling = true
+        moving = false
+        const delta = e.wheelDelta ? e.wheelDelta : -e.deltaY
+        delta > 0 ? (targetScale = scale * 1.4) : (targetScale = scale / 1.4)
+        mouse.x = e.pageX
+        mouse.y = e.pageY
+      }
+
+      const setScale = (oldScale, newScale) => {
+        translateX = mouse.x - (mouse.x - translateX) / oldScale * newScale
+        translateY = mouse.y - (mouse.y - translateY) / oldScale * newScale
+        scale = newScale
+      }
+
+      let raf
+      const loop = () => {
+        if (moving) {
+          translateX += (targetTranslateX - translateX) * 0.1
+          translateY += (targetTranslateY - translateY) * 0.1
+        }
+        if (scaling) {
+          setScale(scale, scale + (targetScale - scale) * 0.1)
+        }
+        $ele.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')'
+        raf = requestAnimationFrame(loop)
+      }
+
+      raf = requestAnimationFrame(loop)
+    }
+    $ele.complete ? onImgLoad() : $ele.onload = onImgLoad
+  })()
+</script>
+</body>
+</html>
