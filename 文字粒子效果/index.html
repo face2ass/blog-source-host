@@ -1,0 +1,145 @@
+<html lang="zh-cn">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>粒子</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    #particle-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #input-word {
+      font-family: Tahoma, sans-serif;
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      height: 40px;
+      padding: 10px;
+      z-index: 1;
+      width: 200px;
+      border: 1px solid #aaa;
+      line-height: 30px;
+      box-sizing: border-box;
+    }
+
+    #btn-generate {
+      font-family: Tahoma, sans-serif;
+      position: absolute;
+      height: 40px;
+      bottom: 10px;
+      left: 240px;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+<canvas id="particle-canvas" width="1600" height="849"></canvas>
+<input type="text" placeholder="please input words" id="input-word">
+<button id="btn-generate">Generate</button>
+<script>
+  (function () {
+
+    // const blob = new Blob([document.querySelector('#worker').textContent], { type: 'text/javascript' })
+    // const url = window.URL.createObjectURL(blob)
+    const worker = new Worker('./worker.js')
+
+    let pageWidth, pageHeight
+    let particleList = []
+    let particleSize = 0
+    let timer = -1
+
+    let canvas = document.getElementById('particle-canvas')
+
+    let ctx = canvas.getContext('2d')
+
+    let unDoneCount = 0
+
+    worker.onmessage = function (e) {
+      if (e.data.signal === 'initialized') {
+        // 倒计时十秒，每秒绘制一次
+        let count = 10
+        timer = setInterval(function () {
+          if (count <= 0) {
+            clearInterval(timer)
+          }
+          worker.postMessage({ signal: 'generate', word: String(count), fontSize: pageHeight * 0.8, })
+          count--
+        }, 1000)
+      }
+      else if (e.data.signal === 'generated') {
+        particleList = e.data.particleList
+        particleSize = e.data.particleSize
+        unDoneCount = particleList.length
+        tick()
+      }
+      // else if (e.data.signal === 'resized') {
+      //   particleList = e.data.data
+      //   tick()
+      // }
+    }
+
+    let tick = function () {
+      ctx.clearRect(0, 0, pageWidth, pageHeight)
+      let particle
+      for (let i = 0; i < particleList.length; i++) {
+        particle = particleList[i]
+        if (!particle.done) {
+          particle.size = particle.size + (particleSize - particle.size) * particle.speed
+          particle.from.x = particle.from.x + (particle.to.x - particle.from.x) * particle.speed
+          particle.from.y = particle.from.y + (particle.to.y - particle.from.y) * particle.speed
+          if (Math.abs(particle.to.x - particle.from.x) < 0.5 && Math.abs(particle.to.y - particle.from.y) < 0.5 && particleSize - particle.size < 0.1) {
+            particle.done = true
+            particle.from.x = particle.to.x
+            particle.from.y = particle.to.y
+            unDoneCount--
+          }
+        }
+        ctx.fillStyle = particle.color
+        ctx.fillRect(particle.from.x, particle.from.y, particle.size, particle.size)
+      }
+      if (unDoneCount > 0) {
+        requestAnimationFrame(tick)
+      }
+      else {
+        console.log('绘制结束')
+      }
+    }
+
+    pageWidth = document.documentElement.clientWidth
+    pageHeight = document.documentElement.clientHeight
+    canvas.width = pageWidth
+    canvas.height = pageHeight
+
+    worker.postMessage({
+      signal: 'init',
+      width: pageWidth,
+      height: pageHeight,
+      particleSpacing: 4,
+    })
+
+    const $inputWord = document.getElementById('input-word')
+    const $btnGenerate = document.getElementById('btn-generate')
+    $btnGenerate.onclick = function () {
+      const word = $inputWord.value
+      clearInterval(timer)
+      worker.postMessage({ signal: 'generate', word, fontSize: 'auto' })
+    }
+  })()
+</script>
+
+</body>
+</html>
