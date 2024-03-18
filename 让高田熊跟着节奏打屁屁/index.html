@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>高田熊拍屁屁</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+
+      html, body {
+        width: 100%;
+        height: 100%;
+      }
+
+      body {
+        background-color: lightcyan;
+        overflow: hidden;
+      }
+
+      canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      .action-bar {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, 10px);
+        z-index: 2;
+        text-align: center;
+        width: 400px;
+      }
+
+      .action-bar > label {
+        display: block;
+        vertical-align: middle;
+        margin-bottom: 5px;
+        pointer-events: none;
+      }
+
+      .action-bar > input {
+        display: block;
+        width: 100%;
+      }
+
+      .action-bar > audio {
+        display: block;
+        width: 100%;
+      }
+
+      .action-bar > input[disabled] {
+        cursor: not-allowed;
+      }
+
+      .spectrum {
+        transform: translateZ(0);
+        position: absolute;
+        left: 0;
+        bottom: -256px;
+        width: 100%;
+        /*height: 520px;*/
+        /*overflow: hidden;*/
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .spectrum > .bar {
+        position: relative;
+        background-color: rgba(255, 165, 0, 0.7);
+        height: 256px;
+        width: 0;
+        /*transform: translateZ(0) translateY(200px);*/
+        transform: translateZ(0) translateY(0px);
+        will-change: transform;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas class="canvas"></canvas>
+    <div class="action-bar">
+      <label for="action">抚摸</label>
+      <input type="range" id="action" min="0" max="2" value="0" step="1"/>
+      <audio src="VirtualRiot-EnergyDrink.mp3" autoplay crossorigin="anonymous" loop controls></audio>
+    </div>
+    <div class="spectrum"></div>
+    <script src="../lib/pixi-6.0.4.min.js"></script>
+    <script src="../lib/stats-r17.min.js"></script>
+    <script>
+      (async function () {
+        const stats = new Stats()
+        document.body.appendChild(stats.domElement)
+
+        const $canvas = document.querySelector('canvas')
+        const $label = document.querySelector('.action-bar > label')
+        const $input = document.querySelector('.action-bar > input')
+        const $audio = document.querySelector('.action-bar > audio')
+        const $spectrum = document.querySelector('.spectrum')
+
+        let playing = false
+        let pageWidth = document.body.clientWidth
+        let pageHeight = document.body.clientHeight
+
+        const audioCtx = new AudioContext() // 创建音频上下文
+        const analyser = audioCtx.createAnalyser() // 创建分析器（AnalyserNode）节点
+        const source = audioCtx.createMediaElementSource($audio) // 创建音频源节点
+        analyser.fftSize = 512 // 一个无符号长整形 (unsigned long) 的值，代表了快速傅里叶变换(分析器)的窗口大小
+        // 创建数组，用于接受节点分析器分析的数据
+        const frequencyData = new Uint8Array(analyser.frequencyBinCount) // 这里并不是声明一个普通数组，而是需要声明一个无符号的八位整数，刚好是一个字节。并且数组长度需要刚好等于频谱图横坐标长度
+        // 连接输入输出
+        source.connect(analyser) // 音频输入分析器
+        analyser.connect(audioCtx.destination) // 将音频输出回audio（即设备的默认输出）
+
+        // 频谱dom初始化
+        const bufferLength = analyser.frequencyBinCount
+        const numberOfBars = Math.round(bufferLength / 2.5)
+        $spectrum.innerHTML = [...new Array(numberOfBars)].map(v => `<div class="bar"></div>`).join('')
+        const bars = document.querySelectorAll('.bar')
+        const styleSheet = document.styleSheets[0]
+        styleSheet.insertRule(`.spectrum > .bar { width: ${pageWidth / numberOfBars * 0.6}px }`, styleSheet.cssRules.length)
+
+        // audio事件监听
+        $audio.addEventListener('canplaythrough', e => {
+          $audio.play().catch((error) => {
+            if (error.name === 'NotAllowedError') {
+              console.warn('自动播放失败')
+            }
+          })
+        })
+        $audio.addEventListener('play', e => {
+          playing = true
+          $input.disabled = true
+          // 如果音频被挂起，则恢复播放状态
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume()
+          }
+        })
+        $audio.addEventListener('pause', e => {
+  console.log('pause：', e)
+  playing = false
+  $input.disabled = false
+})
+
+        const renderer = new PIXI.Renderer({
+          view: $canvas,
+          width: pageWidth,
+          height: pageHeight,
+          transparent: true,
+          autoDensity: true,
+          antialias: true
+        })
+
+        const stage = new PIXI.Container()
+        stage.name = 'stage'
+        let ani
+
+        const ticker = new PIXI.Ticker()
+
+        let curAction = 0 // 当前动作
+        let nextAction = curAction // 将要执行的动作（用于确保在当前动作播放完后执行）
+        // 动作列表
+        const actionList = [
+          {
+            prefix: 'idle',
+            name: '抚摸',
+            count: 8,
+            frameFrom: -1,
+            frameTo: -1,
+          },
+          {
+            prefix: 'spank',
+            name: '拍屁屁',
+            count: 8,
+            frameFrom: -1,
+            frameTo: -1,
+          },
+          {
+            prefix: 'spank_hard',
+            name: '大力拍屁屁',
+            count: 9,
+            frameFrom: -1,
+            frameTo: -1,
+          },
+        ]
+        const honeHoneClockJson = 'ketakuma.json'
+        const loader = new PIXI.Loader()
+        loader.add([honeHoneClockJson])
+        loader.onComplete.add(async (res) => {
+          const textures = loader.resources[honeHoneClockJson].textures
+          let frames = []
+          let k = 0
+          // 更新每个动作的起止帧
+          for (const action of actionList) {
+            const { prefix, count } = action
+            action.frameFrom = k
+            action.frameTo = k + count - 1
+            k = k + count
+            for (let i = 1; i <= count; i++) {
+              frames.push(textures[`${prefix}(${i})`])
+            }
+          }
+          ani = new PIXI.AnimatedSprite(frames)
+          ani.anchor.set(0.5, 1)
+          ani.position.set(pageWidth * 0.5, pageHeight * 0.5)
+          ani.animationSpeed = 0.25
+
+          // 循环播放
+          ani.onFrameChange = () => {
+            if (ani.currentFrame === actionList[curAction].frameTo) {
+              if (nextAction !== curAction) {
+                curAction = nextAction
+                $input.value = curAction
+                $label.innerHTML = actionList[nextAction].name
+              }
+              ani.gotoAndPlay(actionList[curAction].frameFrom)
+            }
+          }
+          stage.addChild(ani)
+
+          // 开始动画循环
+          ticker.start()
+          // 播放动画
+          ani.gotoAndPlay(actionList[curAction].frameFrom)
+        })
+        loader.load()
+
+        ticker.add(function () {
+          stats.begin()
+          if (playing) {
+            analyser.getByteFrequencyData(frequencyData)
+            let total = 0
+            for (let i = 0; i < numberOfBars; i++) {
+              const y = frequencyData[i]
+              total += y
+              const bar = bars[i]
+              if (bar) {
+                bar.style.transform = `translateZ(0) translateY(${-y}px)`
+              }
+            }
+            const avg = total / numberOfBars
+            if (avg > 175) {
+              nextAction = 2
+            }
+            else if (avg > 120) {
+              nextAction = 1
+            }
+            else {
+              nextAction = 0
+            }
+          }
+          renderer.render(stage)
+          stats.end()
+        })
+
+        const onResize = (e) => {
+          pageWidth = document.body.clientWidth
+          pageHeight = document.body.clientHeight
+          if (ani) {
+            ani.position.set(pageWidth * 0.5, pageHeight * 0.5)
+          }
+          renderer.resize(pageWidth, pageHeight)
+        }
+
+        onResize()
+
+        window.onresize = onResize
+
+        $input.onchange = function (e) {
+          nextAction = Number($input.value)
+        }
+
+        // chrome开发者工具PIXI插件检测
+        globalThis.__PIXI_STAGE__ = stage
+        globalThis.__PIXI_RENDERER__ = renderer
+      })()
+    </script>
+  </body>
+</html>
