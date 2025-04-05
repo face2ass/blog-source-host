@@ -13,10 +13,13 @@
 静态页已部署。可直接在浏览器以<q>http://kaysama.gitee.io/blog-source-host</q>+<q>路径</q>的方式访问案例。(如果该案例支持在线预览)
 <p>
   如：要预览“3D相片”页面的效果，可以访问
-  <a href="http://kaysama.gitee.io/blog-source-host/3D相片/index.html">http://kaysama.gitee.io/blog-source-host/3D相片/index.html</a>
-</p>
-<p style="color: #aaa">
-  Gitee Pages 服务 河蟹了不少东西，部分文本、图片可能与博客内容不一致，替换前的原始图片zip打包在了原始目录。🤡遥遥领先🤣
+  <a id="link" href="#"></a>
 </p>
 </body>
+<script>
+const prefix = window.location.href.split('blog-source-host')[0]
+const $a = document.getElementById('link')
+$a.href = prefix + 'blog-source-host/3D相片/index.html'
+$a.innerHTML = decodeURIComponent($a.href)
+</script>
 </html>
