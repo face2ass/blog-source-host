@@ -1,25 +1,511 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>入口</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目目录结构</title>
+    <style>
+        :root {
+            --dir-color: #4a5568;
+            --link-color: #2b6cb0;
+            --line-color: #cbd5e0;
+        }
+
+        body {
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            color: #1a202c;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.8rem;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .node {
+            margin: 0.25rem 0;
+            position: relative;
+        }
+
+        .node-content {
+            display: flex;
+            align-items: center;
+            min-height: 1.8rem;
+            padding: 0.2rem 0;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 1.5em;
+            margin-right: 0.5rem;
+        }
+
+        .dir-icon {
+            color: var(--dir-color);
+        }
+
+        .link-icon {
+            color: var(--link-color);
+        }
+
+        .dir-name {
+            color: var(--dir-color);
+            font-weight: 500;
+        }
+
+        .demo-link {
+            color: var(--link-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .demo-link:hover {
+            color: #1a365d;
+            text-decoration: underline;
+        }
+
+        /* 树状连接线 */
+        .sub-tree {
+            position: relative;
+            margin-left: 1rem;
+        }
+
+        .sub-tree::before {
+            content: "";
+            position: absolute;
+            left: -0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--line-color);
+        }
+
+        .node:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            left: -1.5rem;
+            top: 1rem;
+            width: 1rem;
+            height: 1px;
+            background: var(--line-color);
+        }
+    </style>
 </head>
 <body>
-<p>
-  <a href='https://gitee.com/kaysama/blog-source-host' target="_blank">
-    <img src='https://gitee.com/kaysama/blog-source-host/badge/star.svg?theme=dark' alt='star' />
-  </a>
-</p>
-静态页已部署。可直接在浏览器以<q>http://kaysama.gitee.io/blog-source-host</q>+<q>路径</q>的方式访问案例。(如果该案例支持在线预览)
-<p>
-  如：要预览“3D相片”页面的效果，可以访问
-  <a id="link" href="#"></a>
-</p>
+    <h1>项目目录（共29个演示）</h1>
+    <ul class="main-tree">
+        
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="3D相片/" class="demo-link">3D相片</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon dir-icon">📁</span>
+                <span class="dir-name">发布网页到Wallpaper Engine</span>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="刮刮乐/" class="demo-link">刮刮乐</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="矩阵/" class="demo-link">矩阵</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon dir-icon">📁</span>
+                <span class="dir-name">前端实现旗帜飘动效果系列</span>
+                
+            </div>
+            
+            <ul class="sub-tree">
+                
+        <li class="node level-1">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="前端实现旗帜飘动效果系列/canvas2D实现-1/" class="demo-link">canvas2D实现-1</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-1">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="前端实现旗帜飘动效果系列/canvas2D实现-2/" class="demo-link">canvas2D实现-2</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-1">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="前端实现旗帜飘动效果系列/dom+css实现/" class="demo-link">dom+css实现</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-1">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="前端实现旗帜飘动效果系列/pixi实现/" class="demo-link">pixi实现</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-1">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="前端实现旗帜飘动效果系列/webgl实现/" class="demo-link">webgl实现</a>
+                
+            </div>
+            
+        </li>
+    
+            </ul>
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="让高田熊跟着节奏打屁屁/" class="demo-link">让高田熊跟着节奏打屁屁</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="人体时钟/" class="demo-link">人体时钟</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="日期选择器/" class="demo-link">日期选择器</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="视频字幕截取器/" class="demo-link">视频字幕截取器</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="贪吃蛇/" class="demo-link">贪吃蛇</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="图片本地压缩预览并上传/" class="demo-link">图片本地压缩预览并上传</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon dir-icon">📁</span>
+                <span class="dir-name">微信开发实践</span>
+                
+            </div>
+            
+            <ul class="sub-tree">
+                
+        <li class="node level-1">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="微信开发实践/public/" class="demo-link">public</a>
+                
+            </div>
+            
+        </li>
+    
+            </ul>
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="文字粒子效果/" class="demo-link">文字粒子效果</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="无缝平移缩放的网格标注线/" class="demo-link">无缝平移缩放的网格标注线</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="行列式/" class="demo-link">行列式</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="以鼠标为锚点平滑缩放元素/" class="demo-link">以鼠标为锚点平滑缩放元素</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="用Spine2D+PIXI来实现可操控的live2D动画/" class="demo-link">用Spine2D+PIXI来实现可操控的live2D动画</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="元素转换大法/" class="demo-link">元素转换大法</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="原生js一步一步实现瀑布流/" class="demo-link">原生js一步一步实现瀑布流</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon dir-icon">📁</span>
+                <span class="dir-name">字符画</span>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="自制表情包/" class="demo-link">自制表情包</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="Canvas2D实现对图片进行网格变换/" class="demo-link">Canvas2D实现对图片进行网格变换</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="css变量实现滚动条控制动画/" class="demo-link">css变量实现滚动条控制动画</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="jQuery树控件/" class="demo-link">jQuery树控件</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon dir-icon">📁</span>
+                <span class="dir-name">lib</span>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="n级排列/" class="demo-link">n级排列</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="PixiJS+自定义Shader实现图片扫光效果/" class="demo-link">PixiJS+自定义Shader实现图片扫光效果</a>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon dir-icon">📁</span>
+                <span class="dir-name">python淘宝爬取</span>
+                
+            </div>
+            
+        </li>
+    
+
+        <li class="node level-0">
+            <div class="node-content">
+                
+                <span class="icon dir-icon">📁</span>
+                <span class="dir-name">WebSocket跨端内容同步</span>
+                
+            </div>
+            
+            <ul class="sub-tree">
+                
+        <li class="node level-1">
+            <div class="node-content">
+                
+                <span class="icon link-icon">📄</span>
+                <a href="WebSocket跨端内容同步/sync-site/" class="demo-link">sync-site</a>
+                
+            </div>
+            
+        </li>
+    
+            </ul>
+        </li>
+    
+    </ul>
 </body>
-<script>
-const prefix = window.location.href.split('blog-source-host')[0]
-const $a = document.getElementById('link')
-$a.href = prefix + 'blog-source-host/3D相片/index.html'
-$a.innerHTML = decodeURIComponent($a.href)
-</script>
 </html>
