@@ -386,7 +386,7 @@
   let splitPoints = [] // 被分割出来的点的集合
   let originSplitPoints // 被分割出来的点的原始集合
 
-  let imgUrl = 'https://kaysama.gitee.io/image-host/happy.jpg'
+  let imgUrl = './happy.jpg'
   const matches = location.search.substring(1).match(/(^|&)img=([^&]*)(&|$)/)
   if (matches) {
     imgUrl = decodeURI(matches[2])
